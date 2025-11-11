@@ -1,4 +1,4 @@
-/* 基本設定とサイバーテーマ  */
+/* 基本設定とサイバーテーマ */
 :root {
     --bg-color: #0a0a1a; /* 暗い紺色 */
     --primary-text: #e0e0e0;
@@ -57,13 +57,13 @@ h1 {
 }
 
 .progress-box.unlocked {
-    background-color: var(--bg-color);
+    background-color: var(--neon-cyan); /* 変更: クリア済みの色を青緑に */
     cursor: pointer;
 }
 
 .progress-box.unlocked:hover {
-    background-color: var(--neon-cyan);
-    border-color: var(--neon-cyan);
+    background-color: var(--neon-magenta); /* 変更: ホバー時の色をマゼンタに */
+    border-color: var(--neon-magenta); /* 変更: ホバー時の色をマゼンタに */
 }
 
 .progress-box.current {
