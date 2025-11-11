@@ -9,15 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // テキストはチェック時に小文字化・全角英数を半角化して比較します
     const answers = {
         1: ["はいどく", "ハイドク", "拝読"],
-        2: ["こたえ2", "answer2", "kotae2"],
-        3: ["こたえ3", "answer3", "kotae3"],
-        4: ["こたえ4", "answer4", "kotae4"],
-        5: ["こたえ5", "answer5", "kotae5"],
-        6: ["こたえ6", "answer6", "kotae6"],
-        7: ["こたえ7", "answer7", "kotae7"],
-        8: ["こたえ8", "answer8", "kotae8"],
-        9: ["こたえ9", "answer9", "kotae9"],
-        10: ["クリア", "clear", "おわり"],
+        2: ["cool", "COOL"],
     };
 
     // --- 変数 -------------------------------------------
