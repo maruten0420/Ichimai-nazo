@@ -1,21 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 設定  -------------------------------------------
+    // --- 設定 -------------------------------------------
     
     // 問題の総数
     const TOTAL_QUESTIONS = 10;
     
-    // 各問題の解答リスト  (複数の解答を許可)
+    // 各問題の解答リスト (複数の解答を許可)
     // テキストはチェック時に小文字化・全角英数を半角化して比較します
     const answers = {
-        1: ["はいどく", "ハイドク", "拝読"],
-        2: ["cool", "COOL"],
+        1: ["はいどく", "拝読", "ハイドク"],
+        2: ["COOL", "cool"],
+
     };
 
     // --- 変数 -------------------------------------------
     
-    let currentQuestion = 1; // 現在の問題番号 (1から)
-    let maxSolvedQuestion = 1; // 解放済みの最大問題番号 (1から)
+    // localStorageからデータを読み込む（なければデフォルト値1）
+    let currentQuestion = parseInt(localStorage.getItem('cyberRiddle_currentQuestion'), 10) || 1;
+    let maxSolvedQuestion = parseInt(localStorage.getItem('cyberRiddle_maxSolvedQuestion'), 10) || 1;
+
+    // currentQuestionが未解放の場所にいたらリセット
+    if (currentQuestion > maxSolvedQuestion) {
+        currentQuestion = maxSolvedQuestion;
+    }
+    // もし全問クリア後(11)になっていたら最後(10)に戻す
+    if (currentQuestion > TOTAL_QUESTIONS) {
+        currentQuestion = TOTAL_QUESTIONS;
+    }
+
 
     // --- DOM要素 ----------------------------------------
     
@@ -38,11 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const qStr = String(qNum).padStart(3, '0');
         
         // ★★★ GitHubにアップロードする際はこちらを有効にしてください ★★★
-        // return `question/question${qStr}.png`;
+        return `question/question${qStr}.png`; // 変更：コメント解除
         
         // ▼▼▼ プレビュー環境用のダミーURL ▼▼▼
         // (近未来的なプレースホルダー画像)
-        return `https://placehold.co/800x600/0a0a1a/00ffff?text=Question+${qNum}`;
+        // return `https://placehold.co/800x600/0a0a1a/00ffff?text=Question+${qNum}`; // 変更：コメントアウト
         // ▲▲▲ GitHubアップ時はこの行を削除またはコメントアウト ▲▲▲
     }
 
@@ -72,22 +84,30 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateProgressBar() {
         progressBar.innerHTML = ''; // 中身をクリア
 
+        const isAllCleared = (maxSolvedQuestion > TOTAL_QUESTIONS); // 全問クリア判定
+
         for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
             const box = document.createElement('div');
             box.classList.add('progress-box');
             
-            if (i < maxSolvedQuestion) {
-                // 解放済み
+            if (isAllCleared) {
+                // 全問クリア後
+                box.classList.add('unlocked');
+                box.title = `問題 ${i} に移動`;
+                box.addEventListener('click', () => jumpToQuestion(i));
+
+            } else if (i < maxSolvedQuestion) {
+                // 解放済み (クリア前)
                 box.classList.add('unlocked');
                 box.title = `問題 ${i} に移動`;
                 box.addEventListener('click', () => jumpToQuestion(i));
             } else if (i === maxSolvedQuestion) {
-                // 現在挑戦中または次の問題
+                // 現在挑戦中
                 if (i === currentQuestion) {
                     box.classList.add('current');
                     box.title = `現在の問題 ${i}`;
                 } else {
-                    // まだ到達していない（maxSolvedQuestionが更新されるとunlockedになる）
+                    // (ここに来ることはないはずだが念のため)
                     box.title = `問題 ${i} (未解放)`;
                 }
             } else {
@@ -116,12 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} qNum - 移動先の問題番号
      */
     function jumpToQuestion(qNum) {
-        // 未解放の問題にはジャンプさせない
-        if (qNum > maxSolvedQuestion) return;
+        // 未解放の問題にはジャンプさせない（全問クリア後はOK）
+        if (qNum > maxSolvedQuestion && maxSolvedQuestion <= TOTAL_QUESTIONS) return;
         
         // 範囲チェック
         if (qNum >= 1 && qNum <= TOTAL_QUESTIONS) {
             currentQuestion = qNum;
+            localStorage.setItem('cyberRiddle_currentQuestion', currentQuestion); // 追加：localStorageに保存
             updateUI();
         }
     }
@@ -160,13 +181,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // 現在の問題が解放済みの最大問題だった場合、次の問題に進む権利を得る
             if (currentQuestion === maxSolvedQuestion && currentQuestion < TOTAL_QUESTIONS) {
                 maxSolvedQuestion++;
+                localStorage.setItem('cyberRiddle_maxSolvedQuestion', maxSolvedQuestion); // 追加：localStorageに保存
             }
             
             // 全問クリアチェック
             if (currentQuestion === TOTAL_QUESTIONS) {
+                // maxSolvedQuestionを問題数より1大きくすることで「全問クリア」状態とする
+                if (maxSolvedQuestion <= TOTAL_QUESTIONS) {
+                    maxSolvedQuestion = TOTAL_QUESTIONS + 1; 
+                    localStorage.setItem('cyberRiddle_maxSolvedQuestion', maxSolvedQuestion); // 追加：localStorageに保存
+                }
+                
                 messageArea.textContent = '全問クリア！おめでとうございます！';
-                updateArrows(); // 矢印を両方無効化
-                updateProgressBar(); // 進捗バーを最終状態に
+                updateArrows(); // 矢印を更新
+                updateProgressBar(); // クリア状態を反映
                 return;
             }
 
@@ -203,6 +231,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 初期化 -----------------------------------------
     
+    // 初期読み込み時の値チェック（リロード対策）
+    if (currentQuestion > TOTAL_QUESTIONS) {
+        currentQuestion = TOTAL_QUESTIONS;
+    }
+    // maxSolvedQuestionが不正な値（例：12以上）になっていたら補正
+    if (maxSolvedQuestion > TOTAL_QUESTIONS + 1) {
+         maxSolvedQuestion = TOTAL_QUESTIONS + 1;
+    }
+
+
     updateUI(); // ページ読み込み時にUIを初期化
 
 });
