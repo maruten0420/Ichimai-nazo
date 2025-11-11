@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 問題の総数
     const TOTAL_QUESTIONS = 10;
     
-    // 各問題の解答リスト (複数の解答を許可)
+    // 各問題の解答リスト  (複数の解答を許可)
     // テキストはチェック時に小文字化・全角英数を半角化して比較します
     const answers = {
         1: ["はいどく", "ハイドク", "拝読"],
