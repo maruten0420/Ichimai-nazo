@@ -1,0 +1,189 @@
+/* 基本設定とサイバーテーマ */
+:root {
+    --bg-color: #0a0a1a; /* 暗い紺色 */
+    --primary-text: #e0e0e0;
+    --neon-cyan: #00ffff;
+    --neon-magenta: #ff00ff;
+    --disabled-color: #444;
+    --correct-color: #00ff00;
+    --wrong-color: #ff3333;
+    --font-primary: 'Orbitron', sans-serif;
+    --font-secondary: 'Noto Sans JP', sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--primary-text);
+    font-family: var(--font-secondary);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden; /* 横スクロール防止 */
+}
+
+/* ヘッダーと進捗バー */
+.site-header {
+    width: 100%;
+    text-align: center;
+    padding: 20px 10px;
+    border-bottom: 1px solid var(--neon-cyan);
+    box-shadow: 0 2px 10px var(--neon-cyan, 0.5);
+}
+
+h1 {
+    font-family: var(--font-primary);
+    color: var(--neon-cyan);
+    margin: 0 0 15px 0;
+    letter-spacing: 2px;
+}
+
+.progress-bar {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap; /* 折り返し */
+}
+
+.progress-box {
+    width: 30px;
+    height: 20px;
+    background-color: var(--disabled-color);
+    border: 1px solid var(--primary-text);
+    cursor: not-allowed;
+    transition: all 0.3s ease;
+}
+
+.progress-box.unlocked {
+    background-color: var(--bg-color);
+    cursor: pointer;
+}
+
+.progress-box.unlocked:hover {
+    background-color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+}
+
+.progress-box.current {
+    background-color: var(--neon-magenta);
+    border-color: var(--neon-magenta);
+    box-shadow: 0 0 10px var(--neon-magenta);
+    cursor: default;
+}
+
+/* メイン（謎解きエリア） */
+.riddle-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 95%;
+    max-width: 1000px;
+    margin: 20px 0;
+    flex-grow: 1; /* フッターを押し下げる */
+}
+
+.riddle-image-wrapper {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#riddle-image {
+    max-width: 100%;
+    max-height: 60vh; /* 高さを制限 */
+    height: auto;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 8px;
+    box-shadow: 0 0 15px var(--neon-cyan, 0.7);
+    background-color: #000;
+}
+
+.nav-arrow {
+    font-family: var(--font-primary);
+    font-size: 2.5rem;
+    background-color: transparent;
+    border: none;
+    color: var(--neon-cyan);
+    cursor: pointer;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    user-select: none; /* テキスト選択防止 */
+}
+
+.nav-arrow:hover:not(:disabled) {
+    color: var(--neon-magenta);
+    transform: scale(1.2);
+}
+
+.nav-arrow:disabled {
+    color: var(--disabled-color);
+    cursor: not-allowed;
+    opacity: 0.3;
+}
+
+/* フッター（解答欄） */
+.answer-container {
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid var(--neon-cyan);
+    margin-bottom: 20px;
+}
+
+#answer-form {
+    display: flex;
+    gap: 10px;
+}
+
+#answer-input {
+    flex-grow: 1;
+    padding: 12px;
+    font-size: 1rem;
+    background-color: #1a1a2e;
+    border: 1px solid var(--neon-cyan);
+    color: var(--primary-text);
+    border-radius: 5px;
+    font-family: var(--font-secondary);
+}
+
+#answer-input:focus {
+    outline: none;
+    box-shadow: 0 0 10px var(--neon-cyan);
+}
+
+#submit-button {
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-family: var(--font-primary);
+    background-color: var(--neon-cyan);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#submit-button:hover {
+    background-color: var(--neon-magenta);
+    box-shadow: 0 0 10px var(--neon-magenta);
+}
+
+#message-area {
+    margin-top: 15px;
+    font-size: 1.1rem;
+    height: 1.2em; /* 高さを確保してレイアウトが崩れないように */
+}
+
+/* メッセージの動的クラス */
+.message-correct {
+    color: var(--correct-color);
+    font-weight: bold;
+}
+
+.message-wrong {
+    color: var(--wrong-color);
+}
