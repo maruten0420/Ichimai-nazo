@@ -4,6 +4,7 @@
     --primary-text: #e0e0e0;
     --neon-cyan: #00ffff;
     --neon-magenta: #ff00ff;
+    --neon-yellow: #ffff00; /* 追加: 挑戦中(黄色) */
     --disabled-color: #444;
     --correct-color: #00ff00;
     --wrong-color: #ff3333;
@@ -50,24 +51,38 @@ h1 {
 .progress-box {
     width: 30px;
     height: 20px;
-    background-color: var(--disabled-color);
-    border: 1px solid var(--primary-text);
+    background-color: var(--bg-color); /* 変更: 未到達(黒) */
+    border: 1px solid var(--disabled-color); /* 変更: 未到達(枠) */
     cursor: not-allowed;
     transition: all 0.3s ease;
 }
 
-.progress-box.unlocked {
-    background-color: var(--neon-cyan); /* 変更: クリア済みの色を青緑に */
-    cursor: pointer;
+.progress-box.clickable {
+    cursor: pointer; /* 追加: クリック可能なもの */
 }
 
-.progress-box.unlocked:hover {
-    background-color: var(--neon-magenta); /* 変更: ホバー時の色をマゼンタに */
-    border-color: var(--neon-magenta); /* 変更: ホバー時の色をマゼンタに */
+.progress-box.unlocked {
+    background-color: var(--neon-cyan); /* 変更: 正解済み(青緑) */
+    border-color: var(--neon-cyan);
+}
+
+.progress-box.unlocked.clickable:hover {
+    background-color: var(--neon-magenta);
+    border-color: var(--neon-magenta);
+}
+
+.progress-box.challenging {
+    background-color: var(--neon-yellow); /* 追加: 現在挑戦中(黄色) */
+    border-color: var(--neon-yellow);
+}
+
+.progress-box.challenging.clickable:hover {
+    background-color: var(--neon-magenta); /* 追加: ホバー時 */
+    border-color: var(--neon-magenta);
 }
 
 .progress-box.current {
-    background-color: var(--neon-magenta);
+    background-color: var(--neon-magenta); /* 変更: 選択中(ピンク) */
     border-color: var(--neon-magenta);
     box-shadow: 0 0 10px var(--neon-magenta);
     cursor: default;
@@ -126,12 +141,13 @@ h1 {
 
 /* フッター（解答欄） */
 .answer-container {
-    width: 90%;
-    max-width: 600px;
+    width: 100%; /* 変更: 画面幅いっぱいに */
+    max-width: 600px; /* 追加: PCでの最大幅 */
+    box-sizing: border-box; /* 追加: paddingを幅計算に含める */
     text-align: center;
-    padding: 20px;
+    padding: 20px; /* 変更: 左右にもpadding */
     border-top: 1px solid var(--neon-cyan);
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto; /* 変更: 中央寄せ */
 }
 
 #answer-form {
