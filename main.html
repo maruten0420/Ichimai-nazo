@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サイバー謎解き</title>
+    <!-- 外部CSSファイルの読み込み -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts (近未来的なフォント) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+JP:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="site-header">
+        <h1>CYBER RIDDLE</h1>
+        <!-- 進捗ボックス -->
+        <nav id="progress-bar" class="progress-bar"></nav>
+    </header>
+
+    <main class="riddle-container">
+        <!-- 左矢印 -->
+        <button id="nav-left" class="nav-arrow left">&lt;</button>
+
+        <!-- 問題画像エリア -->
+        <div class="riddle-image-wrapper">
+            <img id="riddle-image" src="" alt="現在の問題">
+        </div>
+
+        <!-- 右矢印 -->
+        <button id="nav-right" class="nav-arrow right">&gt;</button>
+    </main>
+
+    <footer class="answer-container">
+        <!-- 解答フォーム -->
+        <form id="answer-form">
+            <input type="text" id="answer-input" placeholder="解答を入力..." autocomplete="off">
+            <button type="submit" id="submit-button">送信</button>
+        </form>
+        <!-- メッセージエリア -->
+        <p id="message-area"></p>
+    </footer>
+
+    <!-- 外部JavaScriptファイルの読み込み -->
+    <script src="script.js"></script>
+</body>
+</html>
