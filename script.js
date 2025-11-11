@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 設定 -------------------------------------------
+    // --- 設定  -------------------------------------------
     
     // 問題の総数
     const TOTAL_QUESTIONS = 10;
