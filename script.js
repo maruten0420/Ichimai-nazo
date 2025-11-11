@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     };
 
-    // --- 変数 -------------------------------------------
+// --- 変数 -------------------------------------------
     
     // localStorageからデータを読み込む（なければデフォルト値1）
     let currentQuestion = parseInt(localStorage.getItem('cyberRiddle_currentQuestion'), 10) || 1;
@@ -90,29 +90,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const box = document.createElement('div');
             box.classList.add('progress-box');
             
+            // 要望2: クリック制御 (挑戦中までクリック可能)
+            if (i <= maxSolvedQuestion || isAllCleared) {
+                box.classList.add('clickable');
+                box.title = `問題 ${i} に移動`;
+                box.addEventListener('click', () => jumpToQuestion(i));
+            } else {
+                box.title = `問題 ${i} (未解放)`;
+            }
+
+            // 要望1: 色分け
             if (isAllCleared) {
                 // 全問クリア後
                 box.classList.add('unlocked');
-                box.title = `問題 ${i} に移動`;
-                box.addEventListener('click', () => jumpToQuestion(i));
-
             } else if (i < maxSolvedQuestion) {
-                // 解放済み (クリア前)
+                // ① 正解済み (青緑)
                 box.classList.add('unlocked');
-                box.title = `問題 ${i} に移動`;
-                box.addEventListener('click', () => jumpToQuestion(i));
             } else if (i === maxSolvedQuestion) {
-                // 現在挑戦中
-                if (i === currentQuestion) {
-                    box.classList.add('current');
-                    box.title = `現在の問題 ${i}`;
-                } else {
-                    // (ここに来ることはないはずだが念のため)
-                    box.title = `問題 ${i} (未解放)`;
-                }
-            } else {
-                // 未解放
-                box.title = `問題 ${i} (未解放)`;
+                // ② 現在挑戦中 (黄色)
+                box.classList.add('challenging');
+            }
+            // ③ 未到達 (黒) はデフォルト
+
+            
+            // ③ 選択中 (ピンク) - 他の色を上書き
+            if (i === currentQuestion) {
+                box.classList.add('current');
             }
 
             progressBar.appendChild(box);
@@ -127,8 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
         navLeft.disabled = (currentQuestion === 1);
         
         // 右矢印: 解放済みの最大問題より先には行けない
-        // (ただし、全問解いた後も無効)
-        navRight.disabled = (currentQuestion >= maxSolvedQuestion || currentQuestion === TOTAL_QUESTIONS);
+        // (ただし、全問解いた後は無効)
+        navRight.disabled = (currentQuestion >= maxSolvedQuestion || currentQuestion === TOTAL_QUESTIONS) && (maxSolvedQuestion <= TOTAL_QUESTIONS);
     }
 
     /**
