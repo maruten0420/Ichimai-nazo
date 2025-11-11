@@ -1,189 +1,216 @@
-/* 基本設定とサイバーテーマ */
-:root {
-    --bg-color: #0a0a1a; /* 暗い紺色 */
-    --primary-text: #e0e0e0;
-    --neon-cyan: #00ffff;
-    --neon-magenta: #ff00ff;
-    --disabled-color: #444;
-    --correct-color: #00ff00;
-    --wrong-color: #ff3333;
-    --font-primary: 'Orbitron', sans-serif;
-    --font-secondary: 'Noto Sans JP', sans-serif;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // --- 設定 -------------------------------------------
+    
+    // 問題の総数
+    const TOTAL_QUESTIONS = 10;
+    
+    // 各問題の解答リスト (複数の解答を許可)
+    // テキストはチェック時に小文字化・全角英数を半角化して比較します
+    const answers = {
+        1: ["はいどく", "ハイドク", "拝読"],
+        2: ["こたえ2", "answer2", "kotae2"],
+        3: ["こたえ3", "answer3", "kotae3"],
+        4: ["こたえ4", "answer4", "kotae4"],
+        5: ["こたえ5", "answer5", "kotae5"],
+        6: ["こたえ6", "answer6", "kotae6"],
+        7: ["こたえ7", "answer7", "kotae7"],
+        8: ["こたえ8", "answer8", "kotae8"],
+        9: ["こたえ9", "answer9", "kotae9"],
+        10: ["クリア", "clear", "おわり"],
+    };
 
-body {
-    background-color: var(--bg-color);
-    color: var(--primary-text);
-    font-family: var(--font-secondary);
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    overflow-x: hidden; /* 横スクロール防止 */
-}
+    // --- 変数 -------------------------------------------
+    
+    let currentQuestion = 1; // 現在の問題番号 (1から)
+    let maxSolvedQuestion = 1; // 解放済みの最大問題番号 (1から)
 
-/* ヘッダーと進捗バー */
-.site-header {
-    width: 100%;
-    text-align: center;
-    padding: 20px 10px;
-    border-bottom: 1px solid var(--neon-cyan);
-    box-shadow: 0 2px 10px var(--neon-cyan, 0.5);
-}
+    // --- DOM要素 ----------------------------------------
+    
+    const progressBar = document.getElementById('progress-bar');
+    const riddleImage = document.getElementById('riddle-image');
+    const navLeft = document.getElementById('nav-left');
+    const navRight = document.getElementById('nav-right');
+    const answerForm = document.getElementById('answer-form');
+    const answerInput = document.getElementById('answer-input');
+    const messageArea = document.getElementById('message-area');
 
-h1 {
-    font-family: var(--font-primary);
-    color: var(--neon-cyan);
-    margin: 0 0 15px 0;
-    letter-spacing: 2px;
-}
+    // --- 関数 -------------------------------------------
 
-.progress-bar {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    flex-wrap: wrap; /* 折り返し */
-}
+    /**
+     * 問題画像のURLを取得する
+     * @param {number} qNum - 問題番号
+     * @returns {string} 画像URL
+     */
+    function getQuestionImageUrl(qNum) {
+        const qStr = String(qNum).padStart(3, '0');
+        
+        // ★★★ GitHubにアップロードする際はこちらを有効にしてください ★★★
+        // return `question/question${qStr}.png`;
+        
+        // ▼▼▼ プレビュー環境用のダミーURL ▼▼▼
+        // (近未来的なプレースホルダー画像)
+        return `https://placehold.co/800x600/0a0a1a/00ffff?text=Question+${qNum}`;
+        // ▲▲▲ GitHubアップ時はこの行を削除またはコメントアウト ▲▲▲
+    }
 
-.progress-box {
-    width: 30px;
-    height: 20px;
-    background-color: var(--disabled-color);
-    border: 1px solid var(--primary-text);
-    cursor: not-allowed;
-    transition: all 0.3s ease;
-}
+    /**
+     * UI全体を現在の状態に基づいて更新する
+     */
+    function updateUI() {
+        // 画像の更新
+        riddleImage.src = getQuestionImageUrl(currentQuestion);
+        riddleImage.alt = `問題 ${currentQuestion}`;
 
-.progress-box.unlocked {
-    background-color: var(--bg-color);
-    cursor: pointer;
-}
+        // 進捗バーの更新
+        updateProgressBar();
 
-.progress-box.unlocked:hover {
-    background-color: var(--neon-cyan);
-    border-color: var(--neon-cyan);
-}
+        // 矢印の更新
+        updateArrows();
+        
+        // 解答欄とメッセージのリセット
+        answerInput.value = '';
+        messageArea.textContent = '';
+        messageArea.className = '';
+    }
 
-.progress-box.current {
-    background-color: var(--neon-magenta);
-    border-color: var(--neon-magenta);
-    box-shadow: 0 0 10px var(--neon-magenta);
-    cursor: default;
-}
+    /**
+     * 進捗バーを更新する
+     */
+    function updateProgressBar() {
+        progressBar.innerHTML = ''; // 中身をクリア
 
-/* メイン（謎解きエリア） */
-.riddle-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 95%;
-    max-width: 1000px;
-    margin: 20px 0;
-    flex-grow: 1; /* フッターを押し下げる */
-}
+        for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+            const box = document.createElement('div');
+            box.classList.add('progress-box');
+            
+            if (i < maxSolvedQuestion) {
+                // 解放済み
+                box.classList.add('unlocked');
+                box.title = `問題 ${i} に移動`;
+                box.addEventListener('click', () => jumpToQuestion(i));
+            } else if (i === maxSolvedQuestion) {
+                // 現在挑戦中または次の問題
+                if (i === currentQuestion) {
+                    box.classList.add('current');
+                    box.title = `現在の問題 ${i}`;
+                } else {
+                    // まだ到達していない（maxSolvedQuestionが更新されるとunlockedになる）
+                    box.title = `問題 ${i} (未解放)`;
+                }
+            } else {
+                // 未解放
+                box.title = `問題 ${i} (未解放)`;
+            }
 
-.riddle-image-wrapper {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+            progressBar.appendChild(box);
+        }
+    }
 
-#riddle-image {
-    max-width: 100%;
-    max-height: 60vh; /* 高さを制限 */
-    height: auto;
-    border: 2px solid var(--neon-cyan);
-    border-radius: 8px;
-    box-shadow: 0 0 15px var(--neon-cyan, 0.7);
-    background-color: #000;
-}
+    /**
+     * 左右の矢印の有効/無効を切り替える
+     */
+    function updateArrows() {
+        // 左矢印: 1問目より前には行けない
+        navLeft.disabled = (currentQuestion === 1);
+        
+        // 右矢印: 解放済みの最大問題より先には行けない
+        // (ただし、全問解いた後も無効)
+        navRight.disabled = (currentQuestion >= maxSolvedQuestion || currentQuestion === TOTAL_QUESTIONS);
+    }
 
-.nav-arrow {
-    font-family: var(--font-primary);
-    font-size: 2.5rem;
-    background-color: transparent;
-    border: none;
-    color: var(--neon-cyan);
-    cursor: pointer;
-    padding: 10px 20px;
-    transition: all 0.3s ease;
-    user-select: none; /* テキスト選択防止 */
-}
+    /**
+     * 特定の問題にジャンプする (進捗バー・矢印用)
+     * @param {number} qNum - 移動先の問題番号
+     */
+    function jumpToQuestion(qNum) {
+        // 未解放の問題にはジャンプさせない
+        if (qNum > maxSolvedQuestion) return;
+        
+        // 範囲チェック
+        if (qNum >= 1 && qNum <= TOTAL_QUESTIONS) {
+            currentQuestion = qNum;
+            updateUI();
+        }
+    }
 
-.nav-arrow:hover:not(:disabled) {
-    color: var(--neon-magenta);
-    transform: scale(1.2);
-}
+    /**
+     * 解答を正規化する (比較用)
+     * @param {string} input - ユーザーの入力
+     * @returns {string} 正規化された文字列
+     */
+    function normalizeAnswer(input) {
+        return input
+            .trim() // 前後の空白削除
+            .toLowerCase() // 小文字化
+            .replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => { // 全角英数を半角に
+                return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+            });
+    }
 
-.nav-arrow:disabled {
-    color: var(--disabled-color);
-    cursor: not-allowed;
-    opacity: 0.3;
-}
+    /**
+     * 解答をチェックする
+     * @param {Event} e - フォーム送信イベント
+     */
+    function checkAnswer(e) {
+        e.preventDefault(); // ページリロード防止
+        const userInput = normalizeAnswer(answerInput.value);
+        
+        if (userInput === '') return; // 空欄は無視
 
-/* フッター（解答欄） */
-.answer-container {
-    width: 90%;
-    max-width: 600px;
-    text-align: center;
-    padding: 20px;
-    border-top: 1px solid var(--neon-cyan);
-    margin-bottom: 20px;
-}
+        const correctAnswers = answers[currentQuestion].map(normalizeAnswer);
 
-#answer-form {
-    display: flex;
-    gap: 10px;
-}
+        if (correctAnswers.includes(userInput)) {
+            // --- 正解 ---
+            messageArea.textContent = '正解！';
+            messageArea.className = 'message-correct';
 
-#answer-input {
-    flex-grow: 1;
-    padding: 12px;
-    font-size: 1rem;
-    background-color: #1a1a2e;
-    border: 1px solid var(--neon-cyan);
-    color: var(--primary-text);
-    border-radius: 5px;
-    font-family: var(--font-secondary);
-}
+            // 現在の問題が解放済みの最大問題だった場合、次の問題に進む権利を得る
+            if (currentQuestion === maxSolvedQuestion && currentQuestion < TOTAL_QUESTIONS) {
+                maxSolvedQuestion++;
+            }
+            
+            // 全問クリアチェック
+            if (currentQuestion === TOTAL_QUESTIONS) {
+                messageArea.textContent = '全問クリア！おめでとうございます！';
+                updateArrows(); // 矢印を両方無効化
+                updateProgressBar(); // 進捗バーを最終状態に
+                return;
+            }
 
-#answer-input:focus {
-    outline: none;
-    box-shadow: 0 0 10px var(--neon-cyan);
-}
+            // 0.5秒後に次の問題へ
+            setTimeout(() => {
+                jumpToQuestion(currentQuestion + 1);
+            }, 500);
 
-#submit-button {
-    padding: 12px 20px;
-    font-size: 1rem;
-    font-family: var(--font-primary);
-    background-color: var(--neon-cyan);
-    color: var(--bg-color);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
+        } else {
+            // --- 不正解 ---
+            messageArea.textContent = '不正解...';
+            messageArea.className = 'message-wrong';
+            answerInput.value = ''; // 不正解なら入力欄をクリア
+        }
+    }
 
-#submit-button:hover {
-    background-color: var(--neon-magenta);
-    box-shadow: 0 0 10px var(--neon-magenta);
-}
+    // --- イベントリスナー設定 -------------------------------
+    
+    // 矢印ナビゲーション
+    navLeft.addEventListener('click', () => {
+        if (currentQuestion > 1) {
+            jumpToQuestion(currentQuestion - 1);
+        }
+    });
 
-#message-area {
-    margin-top: 15px;
-    font-size: 1.1rem;
-    height: 1.2em; /* 高さを確保してレイアウトが崩れないように */
-}
+    navRight.addEventListener('click', () => {
+        if (currentQuestion < maxSolvedQuestion && currentQuestion < TOTAL_QUESTIONS) {
+            jumpToQuestion(currentQuestion + 1);
+        }
+    });
 
-/* メッセージの動的クラス */
-.message-correct {
-    color: var(--correct-color);
-    font-weight: bold;
-}
+    // 解答フォーム
+    answerForm.addEventListener('submit', checkAnswer);
 
-.message-wrong {
-    color: var(--wrong-color);
-}
+    // --- 初期化 -----------------------------------------
+    
+    updateUI(); // ページ読み込み時にUIを初期化
+
+});
